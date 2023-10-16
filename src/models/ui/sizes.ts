@@ -1,0 +1,5 @@
+export enum Sizes {
+  APPBAR_HEIGHT = 71,
+  SIDEBAR_WIDTH = 261,
+  SIDEBAR_COLLAPSED_WIDTH = 80,
+}

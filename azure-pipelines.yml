@@ -1,0 +1,55 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+  trigger:
+  - development
+  
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  variables:
+  - group: FE-VARS 
+  
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+  
+  - task: Npm@1
+    inputs:
+      command: 'install'
+    displayName: 'Running NPN Install'
+  
+  - script: |
+      echo "NEXT_PUBLIC_TESTEA_API=$NEXT_PUBLIC_TESTEA_API" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_SUSCRIPTION_KEY=$NEXT_PUBLIC_SUSCRIPTION_KEY" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_AAD_CLIENT_ID=$NEXT_PUBLIC_AAD_CLIENT_ID" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_AAD_REDIRECT_URI=$NEXT_PUBLIC_AAD_REDIRECT_URI" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_AAD_AUTHORITY=$NEXT_PUBLIC_AAD_AUTHORITY" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_CEPEM_AUTH_URL=$NEXT_PUBLIC_CEPEM_AUTH_URL" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "NEXT_PUBLIC_SECRETKEYDATA=$NEXT_PUBLIC_SECRETKEYDATA" >> $(Build.ArtifactStagingDirectory)/.env
+      echo "print env configured"
+      cat $(Build.ArtifactStagingDirectory)/.env
+    displayName: 'Creating .env File'
+  
+  - task: Npm@1
+    inputs:
+      command: 'custom'
+      customCommand: 'run build'
+    displayName: 'Running NPM RUN BUILD'
+  
+  - task: Npm@1
+    inputs:
+      command: 'custom'
+      customCommand: 'run export'
+    displayName: 'Running NPM RUN Export'
+  - task: AzureStaticWebApp@0
+    inputs:
+      app_location: '/out'
+      output_location: '/'
+      #app_build_command: 'npm run build'
+      azure_static_web_apps_api_token: $(WEB-DEPLOY-TOKEN)
+    displayName: 'Deploying to Static Web App'
